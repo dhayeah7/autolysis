@@ -9,6 +9,28 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 
+
+
+
+
+
+import os
+import sys
+
+# Handle optional imports
+try:
+    import pandas as pd
+    import numpy as np
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.decomposition import PCA
+    from sklearn.cluster import KMeans
+    from openai import OpenAI
+except ImportError as e:
+    print(f"Missing required library: {e}")
+    print("Please install dependencies using: uv pip install pandas numpy seaborn matplotlib scikit-learn openai")
+    sys.exit(1)
 class DataAnalyzer:
     def __init__(self, filename):
         self.filename = filename
