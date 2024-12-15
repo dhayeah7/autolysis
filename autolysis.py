@@ -119,10 +119,87 @@ class DataAnalyzer:
         
         return analyses
     
+    def generate_readme(self, data_overview, analysis_results):
+        """
+        Generate a narrative README.md file describing the data and analysis
+        """
+        # Construct the narrative
+        readme_content = f"""# Data Analysis Report
+
+## Data Overview
+
+We analyzed a dataset with the following characteristics:
+- **Total Columns**: {len(data_overview.get('columns', []))}
+- **Total Rows**: {data_overview.get('shape', (0,))[0]}
+- **Columns**: {', '.join(data_overview.get('columns', []))}
+
+### Data Types
+{data_overview.get('data_types', 'No data type information available')}
+
+### Missing Values
+{pd.Series(data_overview.get('missing_values', {})).to_string()}
+
+## Analysis Insights
+
+### Correlation Analysis
+We performed a correlation analysis to understand relationships between numeric variables. 
+
+{self._generate_correlation_narrative(analysis_results.get('correlation', {}))}
+
+### Clustering Analysis
+We applied K-means clustering to identify patterns in the data:
+- **Number of Clusters**: {analysis_results.get('clustering', {}).get('n_clusters', 'N/A')}
+- **Cluster Distribution**: {analysis_results.get('clustering', {}).get('cluster_distribution', 'N/A')}
+
+## Visualizations
+- `correlation_matrix.png`: A heatmap showing correlations between numeric variables
+- `clustering_visualization.png`: A scatter plot of data points colored by cluster membership
+
+## Recommendations
+1. Review the correlation matrix to understand variable relationships
+2. Examine the clustering visualization to identify potential groupings or segments in your data
+3. Consider further in-depth analysis of the identified clusters and highly correlated variables
+"""
+        
+        # Write to README.md
+        with open('README.md', 'w') as f:
+            f.write(readme_content)
+        
+        return readme_content
+    
+    def _generate_correlation_narrative(self, correlation_matrix):
+        """
+        Generate a narrative description of the correlation matrix
+        """
+        if not correlation_matrix:
+            return "No significant correlations were found in the dataset."
+        
+        # Convert dict to DataFrame for easier manipulation
+        corr_df = pd.DataFrame(correlation_matrix)
+        
+        # Find strong positive and negative correlations
+        strong_correlations = []
+        for col1 in corr_df.columns:
+            for col2 in corr_df.columns:
+                if col1 != col2:
+                    corr_value = corr_df.loc[col1, col2]
+                    if abs(corr_value) > 0.5:  # Threshold for strong correlation
+                        strong_correlations.append(
+                            f"- **{col1}** and **{col2}**: Correlation of {corr_value:.2f}"
+                        )
+        
+        if strong_correlations:
+            return "We identified the following strong correlations:\n" + "\n".join(strong_correlations)
+        else:
+            return "No strong correlations (>0.5 or <-0.5) were found between variables."
+    
     # Add the missing method to run full analysis
     def run_full_analysis(self):
         data_overview = self.load_data()
         analysis_results = self.perform_analysis()
+        
+        # Generate README
+        self.generate_readme(data_overview, analysis_results)
         
         # Combine and return results
         return {
