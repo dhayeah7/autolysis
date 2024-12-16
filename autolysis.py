@@ -1,32 +1,34 @@
 import subprocess
 import sys
+import os
 
-# Ensure pip is installed
-def ensure_pip():
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "--version"])
-    except subprocess.CalledProcessError:
-        print("Error: pip is not installed in this Python environment. Please install pip and try again.")
-        sys.exit(1)
+def install_packages(packages):
+    """Robust package installation method"""
+    python_executable = sys.executable
+    for package in packages:
+        try:
+            __import__(package)
+        except ImportError:
+            print(f"Installing {package}...")
+            try:
+                subprocess.check_call([python_executable, '-m', 'pip', 'install', package])
+            except subprocess.CalledProcessError:
+                print(f"Failed to install {package} using pip")
+                # Fallback method
+                try:
+                    subprocess.check_call([sys.executable, '-m', 'ensurepip', '--upgrade'])
+                    subprocess.check_call([python_executable, '-m', 'pip', 'install', package])
+                except Exception as e:
+                    print(f"Critical error installing {package}: {e}")
+                    sys.exit(1)
 
-# Install a package dynamically
-def install_package(package):
-    try:
-        __import__(package)
-    except ImportError:
-        print(f"Installing {package}...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-# Check for pip first
-ensure_pip()
-
-# Install required libraries
+# List of required packages
 required_packages = ["pandas", "numpy", "seaborn", "matplotlib", "openai", "scikit-learn"]
 
-for package in required_packages:
-    install_package(package)
+# Install packages before importing
+install_packages(required_packages)
 
-# Import libraries after installation
+# Now import packages
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -35,8 +37,6 @@ from openai import OpenAI
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
-
-
 
 class DataAnalyzer:
     def __init__(self, filename):
