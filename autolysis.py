@@ -1,11 +1,9 @@
 import subprocess
 import sys
 import os
-import json
-from typing import Optional, Dict, Any
 
 def install_packages(packages):
-    """Enhanced robust package installation method"""
+    """Robust package installation method"""
     python_executable = sys.executable
     for package in packages:
         try:
@@ -15,169 +13,20 @@ def install_packages(packages):
             try:
                 subprocess.check_call([python_executable, '-m', 'pip', 'install', package])
             except subprocess.CalledProcessError:
-                print(f"Failed to install {package}")
-                sys.exit(1)
+                print(f"Failed to install {package} using pip")
+                # Fallback method
+                try:
+                    subprocess.check_call([sys.executable, '-m', 'ensurepip', '--upgrade'])
+                    subprocess.check_call([python_executable, '-m', 'pip', 'install', package])
+                except Exception as e:
+                    print(f"Critical error installing {package}: {e}")
+                    sys.exit(1)
 
-# Robust package list
-required_packages = [
-    "pandas", 
-    "numpy", 
-    "seaborn", 
-    "matplotlib", 
-    "openai==1.3.0",  # Pinned version for stability
-    "scikit-learn"
-]
+# List of required packages
+required_packages = ["pandas", "numpy", "seaborn", "matplotlib", "openai", "scikit-learn"]
 
-# Install packages
+# Install packages before importing
 install_packages(required_packages)
-
-import pandas as pd
-import numpy as np
-from openai import OpenAI
-
-class LLMIntegration:
-    def __init__(self, api_key: Optional[str] = None):
-        """
-        Robust OpenAI API key retrieval with multiple fallback mechanisms
-        """
-        self.api_key = self._get_openai_key(api_key)
-        self.client = None
-        
-        if self.api_key:
-            try:
-                self.client = OpenAI(api_key=self.api_key)
-            except Exception as e:
-                print(f"OpenAI Client Initialization Error: {e}")
-    
-    def _get_openai_key(self, provided_key: Optional[str] = None) -> Optional[str]:
-        """
-        Hierarchical API key retrieval strategy
-        1. Explicitly provided key
-        2. Environment variable
-        3. Configuration file
-        4. User input
-        """
-        # 1. Explicitly provided key
-        if provided_key:
-            return provided_key
-        
-        # 2. Environment variable
-        env_key = os.environ.get('OPENAI_API_KEY')
-        if env_key:
-            return env_key
-        
-        # 3. Configuration file
-        config_paths = [
-            os.path.join(os.path.expanduser('~'), '.openai', 'config.json'),
-            os.path.join(os.path.dirname(__file__), 'openai_config.json')
-        ]
-        
-        for path in config_paths:
-            try:
-                if os.path.exists(path):
-                    with open(path, 'r') as f:
-                        config = json.load(f)
-                        if config.get('api_key'):
-                            return config['api_key']
-            except Exception:
-                continue
-        
-        # 4. Interactive key input (optional)
-        print("No OpenAI API key found through standard methods.")
-        user_input = input("Would you like to manually enter your OpenAI API key? (y/n): ").strip().lower()
-        
-        if user_input == 'y':
-            manually_entered_key = input("Please enter your OpenAI API key: ").strip()
-            return manually_entered_key
-        
-        return None
-    
-    def generate_prompt_insights(
-        self, 
-        data: pd.DataFrame, 
-        prompt_template: Optional[str] = None,
-        max_tokens: int = 300,
-        model: str = "gpt-3.5-turbo"
-    ) -> Optional[str]:
-        """
-        Flexible LLM insight generation with robust error handling
-        
-        :param data: Pandas DataFrame to analyze
-        :param prompt_template: Custom prompt template (optional)
-        :param max_tokens: Maximum tokens for response
-        :param model: OpenAI model to use
-        :return: Generated insights or None
-        """
-        # Validate client initialization
-        if not self.client:
-            print("OpenAI client not initialized. Skipping LLM insights.")
-            return None
-        
-        # Default prompt if not provided
-        if not prompt_template:
-            prompt_template = """
-            Analyze the following dataset and provide professional insights:
-            
-            Dataset Overview:
-            - Total Columns: {column_count}
-            - Total Rows: {row_count}
-            - Columns: {columns}
-            
-            Provide actionable insights, potential patterns, and recommendations 
-            for data analysis in under 250 words.
-            """
-        
-        # Prepare prompt with dataset details
-        formatted_prompt = prompt_template.format(
-            column_count=len(data.columns),
-            row_count=len(data),
-            columns=', '.join(data.columns)
-        )
-        
-        try:
-            response = self.client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": "You are an expert data analyst."},
-                    {"role": "user", "content": formatted_prompt}
-                ],
-                max_tokens=max_tokens
-            )
-            
-            # Extract and return insight
-            return response.choices[0].message.content.strip()
-        
-        except Exception as e:
-            print(f"LLM Insight Generation Error: {e}")
-            return None
-    
-    def validate_api_key(self) -> bool:
-        """
-        Perform a lightweight validation of the OpenAI API key
-        
-        :return: Boolean indicating key validity
-        """
-        if not self.client:
-            return False
-        
-        try:
-            # Minimal API call to validate key
-            self.client.models.list(limit=1)
-            return True
-        except Exception:
-            return False
-
-# Example usage in main script
-def main():
-    # Initialize LLM Integration
-    llm_helper = LLMIntegration()
-    
-    # Validate API Key
-    if not llm_helper.validate_api_key():
-        print("Invalid or missing OpenAI API key. Some features will be limited.")
-    
-    # Your existing data analysis code here...
-
 
 # Now import packages
 import pandas as pd
