@@ -9,18 +9,21 @@ import numpy as np
 import subprocess
 import sys
 
-# Ensure seaborn is installed
+# Check if pip is installed
+try:
+    import pip
+except ImportError:
+    print("pip not found. Installing...")
+    subprocess.check_call([sys.executable, "-m", "ensurepip"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+
+# Install seaborn if not installed
 try:
     import seaborn as sns
 except ImportError:
     print("Seaborn not found. Installing...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "seaborn"])
     import seaborn
-import matplotlib.pyplot as plt
-from openai import OpenAI
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans
 
 
 
