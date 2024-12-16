@@ -1,30 +1,46 @@
+import subprocess
+import sys
+
+# Function to install a package dynamically
+def install_package(package):
+    try:
+        __import__(package)
+    except ImportError:
+        print(f"Installing {package}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+    except ModuleNotFoundError:  # For some packages with different import names
+        print(f"Installing {package}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+
+# Install required libraries dynamically
+required_packages = [
+    "os",           # Standard library (no installation required)
+    "sys",          # Standard library (no installation required)
+    "pandas",       # Install as `pandas`
+    "numpy",        # Install as `numpy`
+    "seaborn",      # Install as `seaborn`
+    "matplotlib",   # Install as `matplotlib`
+    "openai",       # Install as `openai`
+    "scikit-learn", # Install as `scikit-learn`
+]
+
+for package in required_packages:
+    if package in ["os", "sys"]:  # Skip standard library modules
+        continue
+    install_package(package)
+
+# After installation, import the libraries
 import os
 import sys
 import pandas as pd
 import numpy as np
-
-
-
-
-import subprocess
-import sys
-
-# Check if pip is installed
-try:
-    import pip
-except ImportError:
-    print("pip not found. Installing...")
-    subprocess.check_call([sys.executable, "-m", "ensurepip"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
-
-# Install seaborn if not installed
-try:
-    import seaborn as sns
-except ImportError:
-    print("Seaborn not found. Installing...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "seaborn"])
-    import seaborn
-
+import seaborn as sns
+import matplotlib.pyplot as plt
+from openai import OpenAI
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
 
 
 
