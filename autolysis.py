@@ -1,38 +1,32 @@
 import subprocess
 import sys
 
-# Function to install a package dynamically
+# Ensure pip is installed
+def ensure_pip():
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "--version"])
+    except subprocess.CalledProcessError:
+        print("Error: pip is not installed in this Python environment. Please install pip and try again.")
+        sys.exit(1)
+
+# Install a package dynamically
 def install_package(package):
     try:
         __import__(package)
     except ImportError:
         print(f"Installing {package}...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-    except ModuleNotFoundError:  # For some packages with different import names
-        print(f"Installing {package}...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
+# Check for pip first
+ensure_pip()
 
-# Install required libraries dynamically
-required_packages = [
-    "os",           # Standard library (no installation required)
-    "sys",          # Standard library (no installation required)
-    "pandas",       # Install as `pandas`
-    "numpy",        # Install as `numpy`
-    "seaborn",      # Install as `seaborn`
-    "matplotlib",   # Install as `matplotlib`
-    "openai",       # Install as `openai`
-    "scikit-learn", # Install as `scikit-learn`
-]
+# Install required libraries
+required_packages = ["pandas", "numpy", "seaborn", "matplotlib", "openai", "scikit-learn"]
 
 for package in required_packages:
-    if package in ["os", "sys"]:  # Skip standard library modules
-        continue
     install_package(package)
 
-# After installation, import the libraries
-import os
-import sys
+# Import libraries after installation
 import pandas as pd
 import numpy as np
 import seaborn as sns
