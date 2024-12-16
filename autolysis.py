@@ -2,12 +2,7 @@ import os
 import sys
 import pandas as pd
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from openai import OpenAI
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans
+
 
 
 
@@ -21,6 +16,11 @@ except ImportError:
     print("Seaborn not found. Installing...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "seaborn"])
     import seaborn
+import matplotlib.pyplot as plt
+from openai import OpenAI
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
 
 
 
