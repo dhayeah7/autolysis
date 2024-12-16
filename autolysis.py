@@ -11,6 +11,16 @@ from sklearn.cluster import KMeans
 
 
 
+import subprocess
+import sys
+
+# Ensure seaborn is installed
+try:
+    import seaborn as sns
+except ImportError:
+    print("Seaborn not found. Installing...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "seaborn"])
+    import seaborn
 
 
 
